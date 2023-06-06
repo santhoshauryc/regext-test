@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="a.js"></script>
+    <script src="data.js"></script>
+
+    <title>Document</title>
+    <style>
+        .cntr {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: stretch;
+            height: 100vh;
+        }
+
+        .txtbox-cntr {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: stretch;
+        }
+
+        textarea {
+            display: block;
+            border: 1px solid #ccc;
+            width: 40em;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 1em;
+            padding: 1em;
+            font-family: sans-serif;
+        }
+
+        h4 {
+            font-size: 1em;
+            font-weight: 100;
+            font-family: monospace;
+        }
+
+        button {
+            padding: 0.5em;
+            margin: 0.5em;
+        }
+
+        * {
+            box-sizing: border-box;
+            overflow: auto;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top">
+        <h1>Regex Tester</h1>
+        <button onclick="redact()">Run Combined Regexes</button>
+
+        <div class="txtbox-cntr">
+            <textarea class="inputAll" rows="30" cols="30">${samples.join('\n')}</textarea>
+            <textarea class="outputAll" rows="30" cols="30"></textarea>
+        </div>
+
+    </div>
+
+    <div class="cntr">
+        <div class="left"></div>
+    </div>
+</body>
+<script>
+    window.onload = function () {
+        const left = document.querySelector('.left');
+        testData.forEach((data, idx) => {
+            const { samples, regex, category } = data;
+            const div = document.createElement('div');
+            div.classList.add('row');
+            left.appendChild(div);
+            div.innerHTML = `
+                <h3>${category}</h3>
+                <h4>${regex}</h4>
+                <div class="txtbox-cntr" rex="${regex}">
+                    <textarea class="input" rows="8" cols="30">${samples.join('\n')}</textarea>
+                    <button onclick="redactThis(${idx})">→</button>
+                    <textarea class="output" rows="8" cols="30"></textarea>
+                </div>
+            `;
+        });
+
+        const inputAll = document.querySelector('.inputAll');
+        inputAll.value = testData.map((data, i) => {
+            const { samples, regex, category } = data;
+            return (`
+            ${category}
+            ${data.samples.join('\n')}   ${complaints[i]}
+            `);
+        }).join('\n');
+    }
+
+    function redact() {
+        const inputs = document.querySelectorAll('.input');
+        for (input of inputs) {
+            const redacted = redactFbResponse(input.value);
+            input.nextElementSibling.nextElementSibling.value = redacted;
+        }
+
+        const inputAll = document.querySelector('.inputAll');
+        const outputAll = document.querySelector('.outputAll');
+        outputAll.value = redactFbResponse(inputAll.value);
+    }
+
+    function redactThis(idx) {
+        console.log(idx);
+        const input = event.target.previousElementSibling;
+        rex = testData[idx].regex;
+        const redacted = input.value.replaceAll(rex, (match) => '*'.repeat(match.length));;
+        input.nextElementSibling.nextElementSibling.value = redacted;
+    }
+</script>
+
+</html>
